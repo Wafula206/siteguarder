@@ -1,0 +1,35 @@
+{% extends "scanner/base.html" %}
+{% block title %}Scan History | SiteGuarder{% endblock %}
+{% block content %}
+    <h2>Recent Scan History</h2>
+    <table class="scan-history-table">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Date</th>
+                <th>HTTPS?</th>
+                <th>Missing Headers</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for scan in scans %}
+            <tr>
+                <td>{{ scan.url }}</td>
+                <td>{{ scan.scan_time|date:"Y-m-d H:i" }}</td>
+                <td>{% if scan.is_https %}✅{% else %}❌{% endif %}</td>
+                <td>
+                    {% if scan.missing_headers_list %}
+                        {% for h in scan.missing_headers_list %}
+                            <span class="missing">{{ h }}</span>{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span class="all-present">None</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" style="text-align:center;">No scans yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

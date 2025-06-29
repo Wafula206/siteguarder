@@ -1,0 +1,29 @@
+{% extends "scanner/base.html" %}
+
+{% block title %}Security Header Scanner{% endblock %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Scan</button>
+    </form>
+
+    {% if result %}
+        {% if result.error %}
+            <p class="error">Error: {{ result.error }}</p>
+        {% else %}
+            <h2>Results for {{ result.url }}</h2>
+            <h3>Missing Security Headers:</h3>
+            <ul>
+                {% for h in result.missing %}
+                    <li class="missing">{{ h }}</li>
+                {% empty %}
+                    <li class="all-present">All important headers are present!</li>
+                {% endfor %}
+            </ul>
+            <h3>All Response Headers:</h3>
+            <pre>{{ result.headers }}</pre>
+        {% endif %}
+    {% endif %}
+{% endblock %}

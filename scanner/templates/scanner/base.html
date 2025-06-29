@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}SiteGuarder{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'scanner/style.css' %}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+              <!-- nav links here as needed -->
+            <a href="{% url 'home' %}">Home</a>
+            <a href="{% url 'about' %}">About</a>
+            <a href="{% url 'scan' %}">Scanner</a>
+             <a href="{% url 'history' %}">History</a>
+            <a href="#">Contact</a>
+        
+        </nav>
+        <h1>SiteGuarder</h1>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <p>&copy; {{ year|default:2025 }} SiteGuarder</p>
+    </footer>
+</body>
+</html>
