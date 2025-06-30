@@ -173,3 +173,17 @@ footer {
 .scan-history-table tr:hover {
     background: #f0f6ff;
 }
+
+.logout-link {
+    background: none;
+    border: none;
+    color: #4f8cff;
+    font: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 8px;
+    text-decoration: underline;
+}
+.logout-link:hover {
+    color: #1e5bb8;
+}

@@ -1,8 +1,10 @@
 import requests
 import json
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import ScanForm
 from .models import ScanResult
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 
 SECURITY_HEADERS = [
     'Content-Security-Policy',
@@ -22,12 +24,23 @@ HEADER_DESCRIPTIONS = {
     'Permissions-Policy': 'Allows or denies use of browser features in the site’s context.',
 }
 
+def signup_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'registration/signup.html', {'form': form})
+
 def home_view(request):
     return render(request, 'scanner/home.html')
 
 def about_view(request):
     return render(request, 'scanner/about.html')
 
+@login_required
 def scan_view(request):
     result = None
     missing = []
@@ -47,8 +60,9 @@ def scan_view(request):
                     'headers': headers,
                     'missing': missing,
                 }
-                # Save scan result to the database
+                # Save scan result to the database, associate with user
                 ScanResult.objects.create(
+                    user=request.user,
                     url=url,
                     is_https=url.startswith('https'),
                     missing_headers=json.dumps(missing),
@@ -64,8 +78,12 @@ def scan_view(request):
         {'form': form, 'result': result, 'header_descriptions': HEADER_DESCRIPTIONS}
     )
 
+@login_required
 def history_view(request):
-    scans = ScanResult.objects.order_by('-scan_time')[:20]
+    if request.user.is_superuser or request.user.is_staff:
+        scans = ScanResult.objects.order_by('-scan_time')[:20]
+    else:
+        scans = ScanResult.objects.filter(user=request.user).order_by('-scan_time')[:20]
     # Parse missing_headers JSON for each scan for template use
     for scan in scans:
         try:
@@ -73,3 +91,19 @@ def history_view(request):
         except Exception:
             scan.missing_headers_list = []
     return render(request, 'scanner/history.html', {'scans': scans})
+
+@login_required
+def scan_detail_view(request, scan_id):
+    scan = get_object_or_404(ScanResult, id=scan_id)
+    # Only allow owner or admin/staff to view
+    if not (request.user.is_superuser or request.user.is_staff or scan.user == request.user):
+        return render(request, 'scanner/forbidden.html', status=403)
+    try:
+        missing_headers_list = json.loads(scan.missing_headers)
+    except Exception:
+        missing_headers_list = []
+    return render(request, 'scanner/scan_detail.html', {
+        'scan': scan,
+        'missing_headers_list': missing_headers_list,
+        'header_descriptions': HEADER_DESCRIPTIONS,
+    })

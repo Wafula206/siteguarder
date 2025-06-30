@@ -14,7 +14,9 @@
         <tbody>
         {% for scan in scans %}
             <tr>
-                <td>{{ scan.url }}</td>
+                <td>
+                    <a href="{% url 'scan_detail' scan.id %}">{{ scan.url }}</a>
+                </td>
                 <td>{{ scan.scan_time|date:"Y-m-d H:i" }}</td>
                 <td>{% if scan.is_https %}✅{% else %}❌{% endif %}</td>
                 <td>

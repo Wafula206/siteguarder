@@ -1,0 +1,22 @@
+{% extends "scanner/base.html" %}
+{% block title %}Scan Details | SiteGuarder{% endblock %}
+{% block content %}
+    <h2>Scan Details</h2>
+    <p><strong>URL:</strong> {{ scan.url }}</p>
+    <p><strong>Date:</strong> {{ scan.scan_time|date:"Y-m-d H:i" }}</p>
+    <p><strong>HTTPS?</strong> {% if scan.is_https %}✅{% else %}❌{% endif %}</p>
+    <h3>Missing Headers</h3>
+    <ul>
+        {% for h in missing_headers_list %}
+            <li class="missing">
+                {{ h }}
+                {% if header_descriptions.h %}<br><small>{{ header_descriptions.h }}</small>{% endif %}
+            </li>
+        {% empty %}
+            <li class="all-present">None</li>
+        {% endfor %}
+    </ul>
+    <h3>All Response Headers</h3>
+    <pre>{{ scan.all_headers|safe|json_script:"headers" }}</pre>
+    <a href="{% url 'history' %}" class="button">Back to History</a>
+{% endblock %}
